@@ -57,7 +57,7 @@ fn main() {
   }
 
   // Generate tre-config.h
-  let config_h_path = format!("{}/lib/tre-config.h", tre_dir);
+  let config_h_path = format!("{}/local_includes/tre-config.h", tre_dir);
   if !Path::new(&config_h_path).exists() {
     println!("cargo:warning=Generating tre-config.h...");
     std::fs::write(
@@ -66,9 +66,11 @@ fn main() {
 #ifndef TRE_CONFIG_H
 #define TRE_CONFIG_H
 
+#define HAVE_SYS_TYPES_H 1
 #define TRE_APPROX 1
 #define TRE_WCHAR 1
 #define TRE_MULTIBYTE 1
+#define HAVE_WCHAR_H 1
 #define TRE_VERSION \"0.8.0\"
 #define TRE_VERSION_1 0
 #define TRE_VERSION_2 8
@@ -115,8 +117,9 @@ typedef SSIZE_T ssize_t;
     .define("HAVE_ISWALNUM", "1")
     .define("HAVE_ISWSPACE", "1")
     .define("TRE_MULTIBYTE", "1")
-    .define("TRE_USE_SYSTEM_WCTYPE_H", "1")
-    .define("HAVE_REG_BACKSLASH", "1");
+    .define("TRE_APPROX", "1")
+    .define("TRE_WCHAR", "1")
+    .define("HAVE_SYS_TYPES_H", "1");
 
   let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
   let target_env = std::env::var("CARGO_CFG_TARGET_ENV").unwrap_or_default();
