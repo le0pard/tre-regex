@@ -108,6 +108,7 @@ typedef SSIZE_T ssize_t;
     // ----------------------------------------------
     .define("HAVE_WCHAR_H", "1")
     .define("HAVE_WCTYPE_H", "1")
+		.define("HAVE_WCTYPE", "1")
     .define("HAVE_TOWLOWER", "1")
     .define("HAVE_TOWUPPER", "1")
     .define("HAVE_ISWUPPER", "1")

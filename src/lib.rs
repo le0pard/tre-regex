@@ -217,12 +217,12 @@ impl TreRegex {
 
     // 1. Zero-cost prefix extraction
     let prefix_str = unsafe { std::str::from_utf8_unchecked(&slice_bytes[..rm_so]) };
-    let prefix_chars = prefix_str.chars().count() as u32;
+    let prefix_chars = prefix_str.encode_utf16().count() as u32;
     let start_char_index = char_off + prefix_chars;
 
     // 2. Zero-cost match text extraction
     let match_str = unsafe { std::str::from_utf8_unchecked(&slice_bytes[rm_so..rm_eo]) };
-    let match_chars = match_str.chars().count() as u32;
+    let match_chars = match_str.encode_utf16().count() as u32;
     let end_char_index = start_char_index + match_chars;
 
     // 3. Zero-cost Capture Groups
@@ -264,27 +264,36 @@ impl TreRegex {
     let mut params: tre_regaparams_t = unsafe { std::mem::zeroed() };
     unsafe { tre_regaparams_default(&mut params) };
 
+    let mut has_max_errors = false;
+    let mut has_max_cost = false;
+
     if let Some(o) = opts {
       if let Some(e) = o.max_errors {
         params.max_err = e as c_int;
-      }
-      if let Some(i) = o.max_insertions {
-        params.max_ins = i as c_int;
-      } else if o.max_errors.is_some() {
-        params.max_ins = 0;
-      }
-      if let Some(d) = o.max_deletions {
-        params.max_del = d as c_int;
-      } else if o.max_errors.is_some() {
-        params.max_del = 0;
-      }
-      if let Some(s) = o.max_substitutions {
-        params.max_subst = s as c_int;
-      } else if o.max_errors.is_some() {
-        params.max_subst = 0;
+        has_max_errors = true;
       }
       if let Some(c) = o.max_cost {
         params.max_cost = c as c_int;
+        has_max_cost = true;
+      }
+
+      // Mimic Ruby: if max_errors isn't provided, strictly disable specific errors by default
+      if let Some(i) = o.max_insertions {
+        params.max_ins = i as c_int;
+      } else if !has_max_errors {
+        params.max_ins = 0;
+      }
+
+      if let Some(d) = o.max_deletions {
+        params.max_del = d as c_int;
+      } else if !has_max_errors {
+        params.max_del = 0;
+      }
+
+      if let Some(s) = o.max_substitutions {
+        params.max_subst = s as c_int;
+      } else if !has_max_errors {
+        params.max_subst = 0;
       }
 
       if let Some(w) = o.weight_insertion {
@@ -296,11 +305,18 @@ impl TreRegex {
       if let Some(w) = o.weight_substitution {
         params.cost_subst = w as c_int;
       }
-
-      if o.max_errors.is_none() && o.max_cost.is_none() {
-        params.max_err = params.max_ins + params.max_del + params.max_subst;
-      }
+    } else {
+      // Force exact matching if no options object is provided at all
+      params.max_ins = 0;
+      params.max_del = 0;
+      params.max_subst = 0;
     }
+
+    // Calculate total max_err if only granular limits (like maxSubstitutions: 1) were provided
+    if !has_max_errors && !has_max_cost {
+      params.max_err = params.max_ins + params.max_del + params.max_subst;
+    }
+
     params
   }
 }
