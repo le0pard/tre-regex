@@ -205,15 +205,20 @@ impl TreRegex {
         let rm_so = pmatch[0].rm_so as usize;
         let rm_eo = pmatch[0].rm_eo as usize;
 
-        // Unicode safe byte-to-char mapping
-        let prefix_chars = String::from_utf8_lossy(&slice_to_search[..rm_so]).chars().count() as u32;
+        // Get the raw byte array so we can slice it safely using C byte offsets
+        let slice_bytes = slice_to_search.as_bytes();
+
+        // 1. Zero-cost prefix extraction
+        let prefix_str = unsafe { std::str::from_utf8_unchecked(&slice_bytes[..rm_so]) };
+        let prefix_chars = prefix_str.chars().count() as u32;
         let start_char_index = char_off + prefix_chars;
 
-        let match_str = String::from_utf8_lossy(&slice_to_search[rm_so..rm_eo]).into_owned();
+        // 2. Zero-cost match text extraction
+        let match_str = unsafe { std::str::from_utf8_unchecked(&slice_bytes[rm_so..rm_eo]) };
         let match_chars = match_str.chars().count() as u32;
         let end_char_index = start_char_index + match_chars;
 
-        // Extract Capture Groups
+        // 3. Zero-cost Capture Groups
         let mut submatches: Vec<Option<String>> = (1..MAX_NMATCH)
             .map(|i| {
                 let so = pmatch[i].rm_so;
@@ -221,17 +226,19 @@ impl TreRegex {
                 if so == -1 {
                     None
                 } else {
-                    Some(String::from_utf8_lossy(&slice_to_search[so as usize..eo as usize]).into_owned())
+                    let sub_bytes = &slice_bytes[so as usize..eo as usize];
+                    Some(unsafe { std::str::from_utf8_unchecked(sub_bytes) }.to_owned())
                 }
             })
             .collect();
 
+        // Cleanup trailing Nones
         while let Some(None) = submatches.last() {
             submatches.pop();
         }
 
         let payload = TreRegexResult {
-            match_text: match_str,
+            match_text: match_str.to_owned(),
             submatches,
             index: start_char_index,
             end_index: end_char_index,

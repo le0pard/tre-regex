@@ -113,6 +113,8 @@ dist
 
 # End of https://www.toptal.com/developers/gitignore/api/node
 
+/vendors/*
+!/vendors/.keep
 
 #Added by cargo
 

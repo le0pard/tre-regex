@@ -15,6 +15,8 @@ libc = "0.2"
 
 [build-dependencies]
 napi-build = "2"
+cc = "1.2"
+sha2 = "0.11"
 
 [profile.release]
 lto = true
