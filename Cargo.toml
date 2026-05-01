@@ -2,22 +2,22 @@
 [package]
 authors = ["LongYinan <lynweklm@gmail.com>"]
 edition = "2021"
-name = "tre_regex"
+name    = "tre_regex"
 version = "0.1.0"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-napi = "3.0.0"
+libc        = "0.2"
+napi        = "3.0.0"
 napi-derive = "3.0.0"
-libc = "0.2"
 
 [build-dependencies]
+cc         = "1.2"
 napi-build = "2"
-cc = "1.2"
-sha2 = "0.11"
+sha2       = "0.11"
 
 [profile.release]
-lto = true
+lto   = true
 strip = "symbols"
