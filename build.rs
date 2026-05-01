@@ -111,11 +111,12 @@ typedef SSIZE_T ssize_t;
     .define("HAVE_ISWUPPER", "1")
     .define("HAVE_ISWLOWER", "1")
     .define("HAVE_ISWCTYPE", "1")
-		.define("HAVE_WCTYPE", "1")
-		.define("HAVE_ISWALNUM", "1")
-		.define("HAVE_ISWSPACE", "1")
-		.define("TRE_MULTIBYTE", "1")
-		.define("TRE_USE_SYSTEM_WCTYPE_H", "1");
+    .define("HAVE_WCTYPE", "1")
+    .define("HAVE_ISWALNUM", "1")
+    .define("HAVE_ISWSPACE", "1")
+    .define("TRE_MULTIBYTE", "1")
+    .define("TRE_USE_SYSTEM_WCTYPE_H", "1")
+    .define("HAVE_REG_BACKSLASH", "1");
 
   let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
   let target_env = std::env::var("CARGO_CFG_TARGET_ENV").unwrap_or_default();
@@ -133,6 +134,8 @@ typedef SSIZE_T ssize_t;
 
   // 3. Compile ALL the core C files directly into the module
   build
+    .include(format!("{}/local_includes", tre_dir))
+    .include(format!("{}/lib", tre_dir))
     .file(format!("{}/lib/tre-ast.c", tre_dir))
     .file(format!("{}/lib/tre-compile.c", tre_dir))
     .file(format!("{}/lib/tre-match-approx.c", tre_dir))
@@ -144,7 +147,5 @@ typedef SSIZE_T ssize_t;
     .file(format!("{}/lib/regcomp.c", tre_dir))
     .file(format!("{}/lib/regexec.c", tre_dir))
     .file(format!("{}/lib/regerror.c", tre_dir))
-    .include(format!("{}/local_includes", tre_dir))
-    .include(format!("{}/lib", tre_dir))
     .compile("tre");
 }
