@@ -102,18 +102,20 @@ typedef SSIZE_T ssize_t;
   build
     .define("HAVE_MEMMOVE", "1")
     .define("TRE_USE_ALLOCA", "1")
-    // --- FIXED: Multi-byte missing dependencies ---
     .define("HAVE_MBSTATE_T", "1")
     .define("HAVE_MBRTOWC", "1")
-    // ----------------------------------------------
     .define("HAVE_WCHAR_H", "1")
     .define("HAVE_WCTYPE_H", "1")
-		.define("HAVE_WCTYPE", "1")
     .define("HAVE_TOWLOWER", "1")
     .define("HAVE_TOWUPPER", "1")
     .define("HAVE_ISWUPPER", "1")
     .define("HAVE_ISWLOWER", "1")
-    .define("HAVE_ISWCTYPE", "1");
+    .define("HAVE_ISWCTYPE", "1")
+		.define("HAVE_WCTYPE", "1")
+		.define("HAVE_ISWALNUM", "1")
+		.define("HAVE_ISWSPACE", "1")
+		.define("TRE_MULTIBYTE", "1")
+		.define("TRE_USE_SYSTEM_WCTYPE_H", "1");
 
   let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
   let target_env = std::env::var("CARGO_CFG_TARGET_ENV").unwrap_or_default();

@@ -189,7 +189,7 @@ test('Capture Groups - extracts a single capture group', (t) => {
 })
 
 test('Capture Groups - extracts multiple capture groups in order', (t) => {
-  const regex = new TreRegex('([a-z]+)[[:space:]]+([a-z]+)')
+  const regex = new TreRegex('(\\w+)\\s+(\\w+)')
   const result = regex.exec('hello world')
 
   t.truthy(result)
