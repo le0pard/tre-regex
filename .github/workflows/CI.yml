@@ -6,7 +6,7 @@ env:
   MACOSX_DEPLOYMENT_TARGET: '10.13'
   CARGO_INCREMENTAL: '1'
 
-'on':
+on:
   push:
     branches:
       - main
@@ -18,7 +18,7 @@ env:
       - '**/*.gitignore'
       - .editorconfig
       - docs/**
-  pull_request: null
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,24 +29,32 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
+
       - name: Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version-file: '.tool-versions'
           cache: yarn
+
       - name: Install
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
+
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --immutable
+
       - name: Oxlint
         run: yarn lint
+
       - name: Cargo fmt
         run: cargo fmt -- --check
+
       - name: Clippy
         run: cargo clippy
+
   build:
     strategy:
       fail-fast: false
@@ -108,7 +116,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version-file: '.tool-versions'
           cache: yarn
 
       - name: Install
@@ -141,15 +149,19 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           tool: cargo-zigbuild
+
       - name: Setup toolchain
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
+
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --immutable
+
       - name: Build
         run: ${{ matrix.settings.build }}
         shell: bash
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
@@ -158,6 +170,7 @@ jobs:
             ${{ env.APP_NAME }}.*.node
             ${{ env.APP_NAME }}.*.wasm
           if-no-files-found: error
+
   test-macOS-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
     needs:
@@ -181,27 +194,35 @@ jobs:
         node:
           - '20'
           - '22'
+          - '24'
     runs-on: ${{ matrix.settings.host }}
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
+
       - name: Setup node
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
           cache: yarn
           architecture: ${{ matrix.settings.architecture }}
+
       - name: Install dependencies
         run: yarn install
+
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
           name: bindings-${{ matrix.settings.target }}
           path: .
+
       - name: List packages
         run: ls -R .
         shell: bash
+
       - name: Test bindings
         run: yarn test
+
   test-linux-binding:
     name: Test ${{ matrix.target }} - node@${{ matrix.node }}
     needs:
@@ -217,14 +238,18 @@ jobs:
         node:
           - '20'
           - '22'
+          - '24'
     runs-on: ${{ contains(matrix.target, 'aarch64') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
+
       - name: Setup node
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
           cache: yarn
+
       - name: Output docker params
         id: docker
         run: |
@@ -244,26 +269,32 @@ jobs:
               console.log('IMAGE=node:${{ matrix.node }}-slim')
             }
           " >> $GITHUB_OUTPUT
+
       - name: Install dependencies
         run: |
           yarn config set --json supportedArchitectures.cpu '["current", "arm64", "x64", "arm"]'
           yarn config set --json supportedArchitectures.libc '["current", "musl", "gnu"]'
           yarn install
+
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
           name: bindings-${{ matrix.target }}
           path: .
+
       - name: List packages
         run: ls -R .
         shell: bash
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
         if: ${{ contains(matrix.target, 'armv7') }}
         with:
           platforms: all
+
       - run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
         if: ${{ contains(matrix.target, 'armv7') }}
+
       - name: Test bindings
         uses: tj-actions/docker-run@v2
         with:
@@ -271,6 +302,7 @@ jobs:
           name: test-bindings-${{ matrix.target }}
           options: '-v ${{ github.workspace }}:${{ github.workspace }} -w ${{ github.workspace }} --platform ${{ steps.docker.outputs.PLATFORM }}'
           args: yarn test
+
   publish:
     name: Publish
     runs-on: ubuntu-latest
@@ -282,25 +314,33 @@ jobs:
       - test-macOS-windows-binding
       - test-linux-binding
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
+
       - name: Setup node
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version-file: '.tool-versions'
           cache: yarn
+
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --immutable
+
       - name: create npm dirs
         run: yarn napi create-npm-dirs
+
       - name: Download all artifacts
         uses: actions/download-artifact@v8
         with:
           path: artifacts
+
       - name: Move artifacts
         run: yarn artifacts
+
       - name: List packages
         run: ls -R ./npm
         shell: bash
+
       - name: Publish
         run: |
           npm config set provenance true
