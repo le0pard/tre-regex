@@ -352,6 +352,13 @@ jobs:
       - name: Publish
         run: |
           npm config set provenance true
-          npm publish --access public
+
+          for dir in npm/*; do
+            echo "Publishing ./$dir..."
+            npm publish "./$dir" --access public
+          done
+
+          echo "Publishing root package..."
+          npm publish --access public --ignore-scripts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
