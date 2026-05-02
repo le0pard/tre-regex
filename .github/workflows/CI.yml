@@ -151,9 +151,9 @@ jobs:
           tool: cargo-zigbuild
 
       - name: Setup toolchain
+        shell: bash
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
-        shell: bash
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -161,11 +161,12 @@ jobs:
       - name: Install 32-bit Linux Headers (for i686)
         if: matrix.settings.target == 'i686-unknown-linux-gnu'
         run: |
-          sudo apt-get update -qq && sudo apt-get install -yq --no-install-recommends gcc-multilib g++-multilib
+          sudo apt-get update -qq
+          sudo apt-get install -yq --no-install-recommends gcc-multilib g++-multilib
 
       - name: Build
-        run: ${{ matrix.settings.build }}
         shell: bash
+        run: ${{ matrix.settings.build }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
@@ -214,7 +215,7 @@ jobs:
           architecture: ${{ matrix.settings.architecture }}
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --immutable
 
       - name: Download artifacts
         uses: actions/download-artifact@v8
@@ -223,8 +224,8 @@ jobs:
           path: .
 
       - name: List packages
-        run: ls -R .
         shell: bash
+        run: ls -R .
 
       - name: Test bindings
         run: yarn test
@@ -289,8 +290,8 @@ jobs:
           path: .
 
       - name: List packages
-        run: ls -R .
         shell: bash
+        run: ls -R .
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -329,6 +330,7 @@ jobs:
         with:
           node-version-file: '.tool-versions'
           cache: yarn
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -345,23 +347,10 @@ jobs:
         run: yarn artifacts
 
       - name: List packages
-        run: ls -R ./npm
         shell: bash
+        run: ls -R ./npm
 
       - name: Publish
         run: |
-          npm config set provenance true
-          if git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
-          then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            npm publish --access public
-          elif git log -1 --pretty=%B | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+";
-          then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            npm publish --tag next --access public
-          else
-            echo "Not a release, skipping publish"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          yarn npm config set provenance true
+          yarn npm publish --access public
