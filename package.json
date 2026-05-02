@@ -1,20 +1,18 @@
 {
   "name": "@tre-regex/regex",
   "version": "1.0.0",
-  "description": "Template project for writing node package with napi-rs",
+  "description": "TreRegex provides a high-performance Node interface to the TRE C library. It brings robust approximate (fuzzy) regular expression matching to Node, featuring multi-byte Unicode string safety, and granular error limits",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/napi-rs/package-template.git"
+    "url": "git@github.com:le0pard/tre_regex.git"
   },
   "license": "MIT",
   "keywords": [
-    "napi-rs",
-    "NAPI",
-    "N-API",
-    "Rust",
-    "node-addon",
-    "node-addon-api"
+    "fuzzy-regex",
+    "regex",
+    "tre",
+    "fuzzy-regular-expressions"
   ],
   "files": [
     "index.d.ts",
