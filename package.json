@@ -1,6 +1,6 @@
 {
   "name": "@tre-regex/regex",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "TreRegex provides a high-performance Node interface to the TRE C library. It brings robust approximate (fuzzy) regular expression matching to Node, featuring multi-byte Unicode string safety, and granular error limits",
   "main": "index.js",
   "repository": {
