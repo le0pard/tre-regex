@@ -21,36 +21,36 @@ const treExact = new TreRegex('apple')
 const treComplex = new TreRegex('(\\w+)\\s+(\\w+)')
 
 // -----------------------------------------------------------------------------
-// 1. Exact Matching (JS RegExp vs TreRegex)
+// Exact Matching (JS RegExp vs TreRegex)
 // -----------------------------------------------------------------------------
 
 bench
   .add('Native JS RegExp - Exact Match (Short Text)', () => {
     nativeExact.exec(tinyText)
   })
-  .add('TreRegex       - Exact Match (Short Text)', () => {
+  .add('TreRegex - Exact Match (Short Text)', () => {
     treExact.exec(tinyText)
   })
   .add('Native JS RegExp - Exact Match (Massive Text)', () => {
     nativeExact.exec(massiveText)
   })
-  .add('TreRegex       - Exact Match (Massive Text)', () => {
+  .add('TreRegex - Exact Match (Massive Text)', () => {
     treExact.exec(massiveText)
   })
 
 // -----------------------------------------------------------------------------
-// 2. Fuzzy Matching (TreRegex Only)
+// Fuzzy Matching (TreRegex Only)
 // -----------------------------------------------------------------------------
 // We benchmark how the engine scales as we introduce fuzzy limits and costs.
 
 bench
-  .add('TreRegex       - Fuzzy Match (1 error limit)', () => {
+  .add('TreRegex - Fuzzy Match (1 error limit)', () => {
     treExact.exec(tinyText, { maxErrors: 1 })
   })
-  .add('TreRegex       - Fuzzy Match (3 error limit)', () => {
+  .add('TreRegex - Fuzzy Match (3 error limit)', () => {
     treExact.exec(tinyText, { maxErrors: 3 })
   })
-  .add('TreRegex       - Fuzzy Match (Granular weights/costs)', () => {
+  .add('TreRegex - Fuzzy Match (Granular weights/costs)', () => {
     treExact.exec(tinyText, {
       maxCost: 2,
       weightInsertion: 1,
@@ -60,19 +60,19 @@ bench
   })
 
 // -----------------------------------------------------------------------------
-// 3. Capture Groups
+// Capture Groups
 // -----------------------------------------------------------------------------
 
 bench
   .add('Native JS RegExp - Capture Groups', () => {
     nativeComplex.exec(mediumText)
   })
-  .add('TreRegex       - Capture Groups', () => {
+  .add('TreRegex - Capture Groups', () => {
     treComplex.exec(mediumText)
   })
 
 // -----------------------------------------------------------------------------
-// 4. matchAll Iteration
+// matchAll Iteration
 // -----------------------------------------------------------------------------
 
 bench
@@ -97,7 +97,7 @@ async function run() {
   console.log('Running benchmarks...\n')
   await bench.run()
 
-  // 1. Sort the tasks from fastest to slowest (Descending order)
+  // Sort the tasks from fastest to slowest
   const sortedTasks = [...bench.tasks].sort((a, b) => {
     const hzA = (a.result as any)?.throughput?.mean ?? 0
     const hzB = (b.result as any)?.throughput?.mean ?? 0
@@ -112,7 +112,6 @@ async function run() {
       // Handle failed tasks
       if (result?.state === 'errored' || !result?.throughput) {
         return {
-          '#': '❌',
           'Task Name': cleanName,
           'Ops/sec': 'FAILED',
           Margin: 'N/A',
@@ -125,7 +124,7 @@ async function run() {
 
       let relativeSpeed = '🏆 Absolute Fastest'
 
-      // 2. Compare against the task immediately preceding it
+      // Compare against the task immediately preceding it
       if (index > 0) {
         const prevTask = sortedTasks[index - 1]
         const prevHz = (prevTask.result as any).throughput.mean
@@ -137,7 +136,6 @@ async function run() {
       }
 
       return {
-        '#': `${index + 1}`,
         'Task Name': cleanName,
         'Ops/sec': Math.round(hz).toLocaleString(),
         Margin: `±${rme.toFixed(2)}%`,
