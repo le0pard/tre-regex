@@ -116,6 +116,9 @@ dist
 /vendors/*
 !/vendors/.keep
 
+# platform specific
+.DS_Store
+
 #Added by cargo
 
 /target

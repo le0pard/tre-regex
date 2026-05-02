@@ -6,13 +6,13 @@
 
 Standard JavaScript `RegExp` expressions are strictly exact. If you are searching text containing typos, OCR errors, or variations in spelling, standard regex will fail.
 
-While string distance metrics (like Levenshtein distance) exist in the JS ecosystem, they usually require comparing whole strings against other whole strings. `@tre-regex/regex` solves this by allowing you to search for a pattern *within* a larger body of text while permitting a configurable number of errors (insertions, deletions, and substitutions).
+While string distance metrics (like Levenshtein distance) exist in the JS ecosystem, they usually require comparing whole strings against other whole strings. `@tre-regex/regex` solves this by allowing you to search for a pattern _within_ a larger body of text while permitting a configurable number of errors (insertions, deletions, and substitutions).
 
 ## Features
 
-* **Approximate Matching**: Find matches even if the target string has missing, extra, or substituted characters.
-* **Granular Control**: Set strict limits on `maxErrors`, or fine-tune by specific error types (`maxInsertions`, `maxDeletions`, `maxSubstitutions`).
-* **Multi-byte Unicode Safety**: Transparently maps underlying C byte-offsets back to native JavaScript UTF-16 character indices (e.g., emojis won't break your offsets or `String.prototype.slice`).
+- **Approximate Matching**: Find matches even if the target string has missing, extra, or substituted characters.
+- **Granular Control**: Set strict limits on `maxErrors`, or fine-tune by specific error types (`maxInsertions`, `maxDeletions`, `maxSubstitutions`).
+- **Multi-byte Unicode Safety**: Transparently maps underlying C byte-offsets back to native JavaScript UTF-16 character indices (e.g., emojis won't break your offsets or `String.prototype.slice`).
 
 ## Installation
 
@@ -31,17 +31,17 @@ npm install @tre-regex/regex
 Create a new `TreRegex` object and use `exec` or `test` to search text.
 
 ```javascript
-import { TreRegex } from '@tre-regex/regex';
+import { TreRegex } from '@tre-regex/regex'
 
 // The second parameter is an optional boolean for ignoreCase
-const regex = new TreRegex('apple', true);
+const regex = new TreRegex('apple', true)
 
 // Simple boolean check
-regex.test('I ate an APPLE today');
+regex.test('I ate an APPLE today')
 // => true
 
 // Get detailed match data
-const result = regex.exec('I ate an apple today');
+const result = regex.exec('I ate an apple today')
 /* => {
       matchText: "apple",
       submatches: [],
@@ -58,14 +58,14 @@ const result = regex.exec('I ate an apple today');
 You can configure fuzziness by passing an options object directly to the `exec` method.
 
 ```javascript
-const regex = new TreRegex('apple');
+const regex = new TreRegex('apple')
 
 // Allow up to 1 error of any kind
-regex.exec('I ate an aple', { maxErrors: 1 });
+regex.exec('I ate an aple', { maxErrors: 1 })
 // => { matchText: "aple", submatches: [], index: 9, endIndex: 13, cost: 1, errors: { insertions: 0, deletions: 1, substitutions: 0 } }
 
 // Allow substitutions, but explicitly forbid deletions
-regex.exec('I ate an aple', { maxSubstitutions: 1, maxDeletions: 0 });
+regex.exec('I ate an aple', { maxSubstitutions: 1, maxDeletions: 0 })
 // => undefined
 ```
 
@@ -74,9 +74,9 @@ regex.exec('I ate an aple', { maxSubstitutions: 1, maxDeletions: 0 });
 Use `matchAll` to find every occurrence of a pattern in a string. It returns an array of match objects.
 
 ```javascript
-const regex = new TreRegex('cat');
+const regex = new TreRegex('cat')
 
-regex.matchAll('cat, cot, cut', { maxErrors: 1 });
+regex.matchAll('cat, cot, cut', { maxErrors: 1 })
 /* => [
   { matchText: "cat", submatches: [], index: 0, endIndex: 3, cost: 0, errors: { insertions: 0, deletions: 0, substitutions: 0 } },
   { matchText: "cot", submatches: [], index: 5, endIndex: 8, cost: 1, errors: { insertions: 0, deletions: 0, substitutions: 1 } },
@@ -91,11 +91,11 @@ regex.matchAll('cat, cot, cut', { maxErrors: 1 });
 If your pattern does not contain any capture groups, `submatches` will simply return an empty array `[]`.
 
 ```javascript
-const regex = new TreRegex('I love (ruby|python|javascript)');
-const result = regex.exec('I love javascript a lot');
+const regex = new TreRegex('I love (ruby|python|javascript)')
+const result = regex.exec('I love javascript a lot')
 
 // The captured group is extracted exactly as it was matched
-result.submatches; // => ["javascript"]
+result.submatches // => ["javascript"]
 ```
 
 #### Multiple and Optional Groups
@@ -106,23 +106,23 @@ If you use an optional capture group `?` that does not end up matching anything 
 
 ```javascript
 // The first group (cat) is optional. The second group (dog) is required.
-const regex = new TreRegex('(cat)?(dog)');
+const regex = new TreRegex('(cat)?(dog)')
 
-const result = regex.exec('dog');
+const result = regex.exec('dog')
 // result.submatches => [undefined, "dog"]
 ```
 
 #### Fuzzy Capture Groups
 
-One of the most powerful features of `TreRegex` is that capture groups respect your fuzzy matching rules! If a typo occurs *inside* a capture group, the `submatches` array will return the actual typed text with the typo included.
+One of the most powerful features of `TreRegex` is that capture groups respect your fuzzy matching rules! If a typo occurs _inside_ a capture group, the `submatches` array will return the actual typed text with the typo included.
 
 ```javascript
-const regex = new TreRegex('I ate an (apple)');
+const regex = new TreRegex('I ate an (apple)')
 
 // We allow 1 error. The user typed 'aple' (1 deletion).
-const result = regex.exec('I ate an aple', { maxErrors: 1 });
+const result = regex.exec('I ate an aple', { maxErrors: 1 })
 
-result.submatches; // => ["aple"]
+result.submatches // => ["aple"]
 ```
 
 #### The 9-Group Limit
@@ -141,12 +141,12 @@ When creating a new `TreRegex` instance, the constructor takes the pattern as th
 
 ```javascript
 // Fails because case doesn't match
-const exactRegex = new TreRegex('javascript');
-exactRegex.test('JAVASCRIPT'); // => false
+const exactRegex = new TreRegex('javascript')
+exactRegex.test('JAVASCRIPT') // => false
 
 // Succeeds using the ignoreCase flag
-const caseRegex = new TreRegex('javascript', true);
-caseRegex.test('JAVASCRIPT'); // => true
+const caseRegex = new TreRegex('javascript', true)
+caseRegex.test('JAVASCRIPT') // => true
 ```
 
 ### Fuzzy Matching Options
@@ -157,30 +157,30 @@ When calling `exec`, `test`, or `matchAll`, you can pass an options object. If n
 
 These options strictly limit the number of specific operations required to transform the pattern into the matched string.
 
-* **`maxErrors`** *(number)*: The total maximum number of combined errors (insertions + deletions + substitutions) allowed for a match.
-* **`maxInsertions`** *(number)*: The maximum number of extra characters allowed in the searched text. *(e.g., Pattern `cat` matching `cart` is 1 insertion)*.
-* **`maxDeletions`** *(number)*: The maximum number of missing characters in the searched text. *(e.g., Pattern `cat` matching `ct` is 1 deletion)*.
-* **`maxSubstitutions`** *(number)*: The maximum number of swapped characters. *(e.g., Pattern `cat` matching `cot` is 1 substitution)*.
+- **`maxErrors`** _(number)_: The total maximum number of combined errors (insertions + deletions + substitutions) allowed for a match.
+- **`maxInsertions`** _(number)_: The maximum number of extra characters allowed in the searched text. _(e.g., Pattern `cat` matching `cart` is 1 insertion)_.
+- **`maxDeletions`** _(number)_: The maximum number of missing characters in the searched text. _(e.g., Pattern `cat` matching `ct` is 1 deletion)_.
+- **`maxSubstitutions`** _(number)_: The maximum number of swapped characters. _(e.g., Pattern `cat` matching `cot` is 1 substitution)_.
 
 > **Note:** If you specify granular limits (like `maxDeletions: 1`) but omit `maxErrors`, the engine will automatically calculate the maximum allowed errors so you don't accidentally trigger an unlimited fuzzy search.
 
 ```javascript
-const regex = new TreRegex('banana');
+const regex = new TreRegex('banana')
 
 // Allow up to 2 typos of any kind
-regex.exec('bananana', { maxErrors: 2 }); // => matches "bananana" (2 insertions)
-regex.exec('bnnna', { maxErrors: 2 });    // => matches "bnnna" (2 deletions)
-regex.exec('bonono', { maxErrors: 2 });   // => matches "bonono" (2 substitutions)
+regex.exec('bananana', { maxErrors: 2 }) // => matches "bananana" (2 insertions)
+regex.exec('bnnna', { maxErrors: 2 }) // => matches "bnnna" (2 deletions)
+regex.exec('bonono', { maxErrors: 2 }) // => matches "bonono" (2 substitutions)
 
 // Another example
-const strictRegex = new TreRegex('library');
+const strictRegex = new TreRegex('library')
 
 // Allow 1 deletion, but STRICTLY 0 substitutions and 0 insertions
-strictRegex.exec('librry', { maxDeletions: 1, maxSubstitutions: 0, maxInsertions: 0 });
+strictRegex.exec('librry', { maxDeletions: 1, maxSubstitutions: 0, maxInsertions: 0 })
 // => matches "librry"
 
 // This fails because 'lubrary' requires a substitution, which we set to 0
-strictRegex.exec('lubrary', { maxDeletions: 1, maxSubstitutions: 0, maxInsertions: 0 });
+strictRegex.exec('lubrary', { maxDeletions: 1, maxSubstitutions: 0, maxInsertions: 0 })
 // => undefined
 ```
 
@@ -188,13 +188,13 @@ strictRegex.exec('lubrary', { maxDeletions: 1, maxSubstitutions: 0, maxInsertion
 
 Instead of hard limits, you can assign different "costs" to different types of errors. This is useful if you want to penalize certain typos more heavily than others.
 
-* **`maxCost`** *(number)*: The maximum total cost allowed for a match to be considered successful.
-* **`weightInsertion`** *(number)*: The cost penalty for each inserted character.
-* **`weightDeletion`** *(number)*: The cost penalty for each deleted character.
-* **`weightSubstitution`** *(number)*: The cost penalty for each substituted character.
+- **`maxCost`** _(number)_: The maximum total cost allowed for a match to be considered successful.
+- **`weightInsertion`** _(number)_: The cost penalty for each inserted character.
+- **`weightDeletion`** _(number)_: The cost penalty for each deleted character.
+- **`weightSubstitution`** _(number)_: The cost penalty for each substituted character.
 
 ```javascript
-const regex = new TreRegex('algorithm');
+const regex = new TreRegex('algorithm')
 
 // We allow a maximum cost of 2.
 // Missing/extra characters cost 1 point.
@@ -203,14 +203,14 @@ const options = {
   maxCost: 2,
   weightDeletion: 1,
   weightInsertion: 1,
-  weightSubstitution: 3
-};
+  weightSubstitution: 3,
+}
 
 // 'algoritm' has 1 deletion. Cost = 1. (Passes, 1 < 2)
-regex.test('algoritm', options); // => true
+regex.test('algoritm', options) // => true
 
 // 'algorethm' has 1 substitution. Cost = 3. (Fails, 3 > 2)
-regex.test('algorethm', options); // => false
+regex.test('algorethm', options) // => false
 ```
 
 ## Gotchas & Best Practices
@@ -219,15 +219,15 @@ regex.test('algorethm', options); // => false
 
 Because `TreRegex` relies on strict mathematical edit distances, you must be careful when setting `maxErrors` to a value that is **greater than or equal to the length of your pattern**.
 
-If you allow 3 errors on a 3-letter word, the engine considers *deleting all 3 characters* to be a valid mathematical match (cost = 3). This will result in an unexpected match against an empty string (`""`).
+If you allow 3 errors on a 3-letter word, the engine considers _deleting all 3 characters_ to be a valid mathematical match (cost = 3). This will result in an unexpected match against an empty string (`""`).
 
 ```javascript
-const regex = new TreRegex('cat');
+const regex = new TreRegex('cat')
 
 // We allow 3 errors on a 3-letter word.
 // The engine matches "cow" (2 substitutions)...
 // but it also matches "" at the end of the string (3 deletions)!
-regex.matchAll('cot, cow', { maxErrors: 3 });
+regex.matchAll('cot, cow', { maxErrors: 3 })
 /* => [
   { matchText: "cot", ..., cost: 1, errors: { insertions: 0, deletions: 0, substitutions: 1 } },
   { matchText: "cow", ..., cost: 2, errors: { insertions: 0, deletions: 0, substitutions: 2 } },
@@ -239,7 +239,7 @@ regex.matchAll('cot, cow', { maxErrors: 3 });
 
 ```javascript
 // Allow 3 total errors, but strictly forbid the engine from deleting more than 2 characters
-regex.matchAll('cot, cow', { maxErrors: 3, maxDeletions: 2 });
+regex.matchAll('cot, cow', { maxErrors: 3, maxDeletions: 2 })
 // The empty match is mathematically prevented and omitted
 ```
 
@@ -251,10 +251,10 @@ The underlying TRE C-library uses **POSIX Extended Regular Expressions (ERE)**. 
 
 ```javascript
 // Valid TRE syntax
-new TreRegex('(cat|dog)s?');
+new TreRegex('(cat|dog)s?')
 
 // INVALID: Lookarounds are not supported by POSIX ERE
-new TreRegex('cat(?=s)'); // Throws: Failed to compile regex pattern
+new TreRegex('cat(?=s)') // Throws: Failed to compile regex pattern
 ```
 
 ### The Performance Cost of Extreme Fuzziness
@@ -274,14 +274,14 @@ In C, strings are just arrays of bytes. An emoji like 🍎 takes up 4 bytes, whi
 **Best Practice**: You can safely use the returned indices directly with `String.prototype.slice()`, even if the text is filled with emojis or multi-byte characters!
 
 ```javascript
-const regex = new TreRegex('apple');
-const target = 'I ate 🍎 and an aple';
+const regex = new TreRegex('apple')
+const target = 'I ate 🍎 and an aple'
 
-const result = regex.exec(target, { maxErrors: 1 });
+const result = regex.exec(target, { maxErrors: 1 })
 // result.index is 15, result.endIndex is 19
 
 // This is 100% safe and will correctly return "aple"
-target.slice(result.index, result.endIndex);
+target.slice(result.index, result.endIndex)
 ```
 
 ### Overlapping Matches in `matchAll`
@@ -291,10 +291,10 @@ When using `matchAll`, be aware that the engine consumes the string as it matche
 If you search for `"ana"` in `"banana"`, it will only match the first `"ana"`. Once it consumes those characters, it moves on to the remaining `"na"`.
 
 ```javascript
-const regex = new TreRegex('ana');
+const regex = new TreRegex('ana')
 
 // Returns 1 match, not 2!
-regex.matchAll('banana');
+regex.matchAll('banana')
 // => [{ matchText: "ana", index: 1, endIndex: 4, ... }]
 ```
 
