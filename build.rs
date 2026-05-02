@@ -59,16 +59,18 @@ fn main() {
   let local_includes = format!("{}/local_includes", tre_dir);
   std::fs::create_dir_all(&local_includes).unwrap();
 
+  let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
+  let target_env = std::env::var("CARGO_CFG_TARGET_ENV").unwrap_or_default();
+
   // Generate the master config.h exactly like autotools does,
   let config_h_path = format!("{}/config.h", local_includes);
-  std::fs::write(&config_h_path, r#"
+  let mut config_h = String::from(
+    r#"
 #ifndef TRE_CONFIG_H_ROOT
 #define TRE_CONFIG_H_ROOT
 
 #define HAVE_ALLOCA 1
 #define HAVE_ALLOCA_H 1
-#define HAVE_CFLOCALECOPYCURRENT 1
-#define HAVE_CFPREFERENCESCOPYAPPVALUE 1
 #define HAVE_DLFCN_H 1
 #define HAVE_GETOPT_H 1
 #define HAVE_GETOPT_LONG 1
@@ -102,55 +104,47 @@ fn main() {
 #define HAVE_WCTYPE 1
 #define HAVE_WCTYPE_H 1
 #define HAVE_WINT_T 1
-#define LT_OBJDIR ".libs/"
-#define NDEBUG 1
-#define PACKAGE "tre"
-#define PACKAGE_BUGREPORT ""
-#define PACKAGE_NAME "TRE"
-#define PACKAGE_STRING "TRE 0.9.0"
-#define PACKAGE_TARNAME "tre"
-#define PACKAGE_VERSION "0.9.0"
 #define STDC_HEADERS 1
 #define TRE_APPROX 1
 #define TRE_MULTIBYTE 1
 #define TRE_REGEX_T_FIELD value
 #define TRE_USE_ALLOCA 1
 #define TRE_VERSION "0.9.0"
-#define TRE_VERSION_1 0
-#define TRE_VERSION_2 9
-#define TRE_VERSION_3 0
 #define TRE_WCHAR 1
 #define USE_LOCAL_TRE_H 1
-#define VERSION "0.9.0"
 
 #ifndef _ALL_SOURCE
 # define _ALL_SOURCE 1
 #endif
-#ifndef _DARWIN_C_SOURCE
-# define _DARWIN_C_SOURCE 1
-#endif
 #ifndef __EXTENSIONS__
 # define __EXTENSIONS__ 1
-#endif
-#ifndef _GNU_SOURCE
-# define _GNU_SOURCE 1
-#endif
-#ifndef _NETBSD_SOURCE
-# define _NETBSD_SOURCE 1
-#endif
-#ifndef _OPENBSD_SOURCE
-# define _OPENBSD_SOURCE 1
 #endif
 #ifndef _POSIX_PTHREAD_SEMANTICS
 # define _POSIX_PTHREAD_SEMANTICS 1
 #endif
+"#,
+  );
 
-#endif
-"#).unwrap();
+  // Inject OS-Specific Macros safely
+  if target_os == "macos" {
+    config_h.push_str("#define HAVE_CFLOCALECOPYCURRENT 1\n");
+    config_h.push_str("#define HAVE_CFPREFERENCESCOPYAPPVALUE 1\n");
+    config_h.push_str("#ifndef _DARWIN_C_SOURCE\n# define _DARWIN_C_SOURCE 1\n#endif\n");
+  } else if target_os == "linux" {
+    config_h.push_str("#ifndef _GNU_SOURCE\n# define _GNU_SOURCE 1\n#endif\n");
+  } else if target_os == "windows" {
+    // Windows MSVC requires slightly different tuning, unistd.h doesn't exist
+    config_h = config_h.replace("#define HAVE_UNISTD_H 1", "/* #undef HAVE_UNISTD_H */");
+  }
+
+  config_h.push_str("\n#endif\n");
+  std::fs::write(&config_h_path, config_h).unwrap();
 
   // Generate the internal API tre-config.h
   let tre_config_h_path = format!("{}/tre-config.h", local_includes);
-  std::fs::write(&tre_config_h_path, r#"
+  std::fs::write(
+    &tre_config_h_path,
+    r#"
 #ifndef TRE_CONFIG_H
 #define TRE_CONFIG_H
 
@@ -178,15 +172,14 @@ typedef SSIZE_T ssize_t;
 #endif
 
 #endif
-"#).unwrap();
+"#,
+  )
+  .unwrap();
 
   // 2. Configure the C Compiler with maximum performance & Unicode macros
   let mut build = cc::Build::new();
 
   build.define("HAVE_CONFIG_H", "1");
-
-  let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
-  let target_env = std::env::var("CARGO_CFG_TARGET_ENV").unwrap_or_default();
 
   if target_os == "windows" {
     build.define("ENABLE_NLS", "0");

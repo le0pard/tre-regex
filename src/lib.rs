@@ -174,12 +174,16 @@ impl TreRegex {
 
         // Zero-width infinite loop protection
         if actual_adv_b == 0 {
-          if b_off == byte_len {
+          if b_off >= byte_len {
             break;
           }
-          let next_char = text[b_off..].chars().next().unwrap();
-          actual_adv_b = next_char.len_utf8();
-          actual_adv_c = 1;
+          // Safely get the next character's byte length without panicking on boundaries
+          if let Some(next_char) = text[b_off..].chars().next() {
+            actual_adv_b = next_char.len_utf8();
+            actual_adv_c = 1;
+          } else {
+            break;
+          }
         }
 
         b_off += actual_adv_b;
@@ -235,26 +239,33 @@ impl TreRegex {
     // Get the raw byte array so we can slice it safely using C byte offsets
     let slice_bytes = slice_to_search.as_bytes();
 
-    // 1. Zero-cost prefix extraction
-    let prefix_str = unsafe { std::str::from_utf8_unchecked(&slice_bytes[..rm_so]) };
+    // Safely enforce bounds to prevent panic if TRE returns out-of-bounds indices
+    let safe_rm_so = rm_so.min(slice_bytes.len());
+    let safe_rm_eo = rm_eo.min(slice_bytes.len());
+
+    // Safe prefix extraction
+    let prefix_str = std::str::from_utf8(&slice_bytes[..safe_rm_so]).unwrap_or("");
     let prefix_chars = prefix_str.encode_utf16().count() as u32;
     let start_char_index = char_off + prefix_chars;
 
-    // 2. Zero-cost match text extraction
-    let match_str = unsafe { std::str::from_utf8_unchecked(&slice_bytes[rm_so..rm_eo]) };
+    // Safe match text extraction
+    let match_str = std::str::from_utf8(&slice_bytes[safe_rm_so..safe_rm_eo]).unwrap_or("");
     let match_chars = match_str.encode_utf16().count() as u32;
     let end_char_index = start_char_index + match_chars;
 
-    // 3. Zero-cost Capture Groups
+    // Safe Capture Groups
     let mut submatches: Vec<Option<String>> = (1..MAX_NMATCH)
       .map(|i| {
         let so = pmatch[i].rm_so;
         let eo = pmatch[i].rm_eo;
-        if so == -1 {
+        if so == -1 || so > eo {
           None
         } else {
-          let sub_bytes = &slice_bytes[so as usize..eo as usize];
-          Some(unsafe { std::str::from_utf8_unchecked(sub_bytes) }.to_owned())
+          let safe_so = (so as usize).min(slice_bytes.len());
+          let safe_eo = (eo as usize).min(slice_bytes.len());
+          let sub_bytes = &slice_bytes[safe_so..safe_eo];
+          // Use safe from_utf8
+          Some(std::str::from_utf8(sub_bytes).unwrap_or("").to_owned())
         }
       })
       .collect();
