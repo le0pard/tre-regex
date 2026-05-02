@@ -354,5 +354,5 @@ jobs:
 
       - name: Publish
         run: |
-          yarn npm config set provenance true
-          yarn npm publish --access public
+          npm config set provenance true
+          npm publish --access public
