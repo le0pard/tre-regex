@@ -321,6 +321,8 @@ jobs:
       - lint
       - test-macOS-windows-binding
       - test-linux-binding
+    environment:
+      name: production
     steps:
       - name: Checkout
         uses: actions/checkout@v6

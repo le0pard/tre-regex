@@ -1,6 +1,6 @@
 {
   "name": "@tre-regex/regex",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "TreRegex provides a high-performance Node interface to the TRE C library. It brings robust approximate (fuzzy) regular expression matching to Node, featuring multi-byte Unicode string safety, and granular error limits",
   "main": "index.js",
   "repository": {
@@ -107,5 +107,19 @@
     "singleQuote": true,
     "arrowParens": "always"
   },
-  "packageManager": "yarn@4.14.1"
+  "packageManager": "yarn@4.14.1",
+  "optionalDependencies": {
+    "@tre-regex/regex-linux-arm64-gnu": "0.1.0",
+    "@tre-regex/regex-linux-arm64-musl": "0.1.0",
+    "@tre-regex/regex-win32-arm64-msvc": "0.1.0",
+    "@tre-regex/regex-linux-arm-gnueabihf": "0.1.0",
+    "@tre-regex/regex-linux-arm-musleabihf": "0.1.0",
+    "@tre-regex/regex-darwin-arm64": "0.1.0",
+    "@tre-regex/regex-win32-x64-msvc": "0.1.0",
+    "@tre-regex/regex-linux-ia32-gnu": "0.1.0",
+    "@tre-regex/regex-linux-ia32-musl": "0.1.0",
+    "@tre-regex/regex-darwin-x64": "0.1.0",
+    "@tre-regex/regex-linux-x64-gnu": "0.1.0",
+    "@tre-regex/regex-linux-x64-musl": "0.1.0"
+  }
 }
