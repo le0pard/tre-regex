@@ -349,16 +349,19 @@ jobs:
         shell: bash
         run: ls -R ./npm
 
+      - name: Setup yarn publish settings
+        run: |
+          yarn config set npmRegistryServer "https://registry.npmjs.org"
+          yarn config set npmPublishAccess "public"
+
       - name: Publish
         run: |
           npm config set provenance true
 
           for dir in npm/*; do
             echo "Publishing ./$dir..."
-            npm publish "./$dir" --access public --ignore-scripts
+            yarn npm publish "./$dir" --ignore-scripts
           done
 
           echo "Publishing root package..."
-          npm publish --access public --ignore-scripts
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          yarn npm publish --ignore-scripts
