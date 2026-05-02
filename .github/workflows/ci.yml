@@ -334,7 +334,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: create npm dirs
+      - name: Create npm dirs
         run: yarn napi create-npm-dirs
 
       - name: Download all artifacts
