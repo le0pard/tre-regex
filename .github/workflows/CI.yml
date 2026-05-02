@@ -350,3 +350,5 @@ jobs:
         run: |
           npm config set provenance true
           npm publish --access public
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
