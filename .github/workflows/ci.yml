@@ -312,7 +312,7 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
-      contents: read
+      contents: write
       id-token: write
     needs:
       - lint
@@ -351,10 +351,7 @@ jobs:
 
       - name: Publish
         run: |
-          for dir in npm/*; do
-            echo "Publishing ./$dir..."
-            npm publish "./$dir" --access public
-          done
-
-          echo "Publishing root package..."
-          npm publish --access public --ignore-scripts
+          npm config set provenance true
+          npm publish --access public
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
