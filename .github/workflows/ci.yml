@@ -356,8 +356,6 @@ jobs:
 
       - name: Publish
         run: |
-          npm config set provenance true
-
           for dir in npm/*; do
             echo "Publishing ./$dir..."
             yarn npm publish "./$dir" --ignore-scripts
