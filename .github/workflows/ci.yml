@@ -355,7 +355,7 @@ jobs:
 
           for dir in npm/*; do
             echo "Publishing ./$dir..."
-            npm publish "./$dir" --access public
+            npm publish "./$dir" --access public --ignore-scripts
           done
 
           echo "Publishing root package..."
