@@ -10,8 +10,8 @@ on:
   push:
     branches:
       - main
-    tags-ignore:
-      - '**'
+    tags:
+      - 'v*'
     paths-ignore:
       - '**/*.md'
       - LICENSE
@@ -175,6 +175,7 @@ jobs:
             ${{ env.APP_NAME }}.*.node
             ${{ env.APP_NAME }}.*.wasm
           if-no-files-found: error
+          retention-days: 1
 
   test-macOS-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
@@ -311,6 +312,7 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
       id-token: write
