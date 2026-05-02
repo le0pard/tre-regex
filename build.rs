@@ -135,6 +135,8 @@ fn main() {
   } else if target_os == "windows" {
     // Windows MSVC requires slightly different tuning, unistd.h doesn't exist
     config_h = config_h.replace("#define HAVE_UNISTD_H 1", "/* #undef HAVE_UNISTD_H */");
+    // Tell TRE not to look for the Mac/Linux alloca header on Windows
+    config_h = config_h.replace("#define HAVE_ALLOCA_H 1", "/* #undef HAVE_ALLOCA_H */");
   }
 
   config_h.push_str("\n#endif\n");
