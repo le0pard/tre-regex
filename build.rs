@@ -56,30 +56,115 @@ fn main() {
     assert!(tar_status.success(), "Failed to extract TRE tarball");
   }
 
-  // Generate tre-config.h
-  let config_h_path = format!("{}/local_includes/tre-config.h", tre_dir);
-  if !Path::new(&config_h_path).exists() {
-    println!("cargo:warning=Generating tre-config.h...");
-    std::fs::write(
-      &config_h_path,
-      "
+  let local_includes = format!("{}/local_includes", tre_dir);
+  std::fs::create_dir_all(&local_includes).unwrap();
+
+  // Generate the master config.h exactly like autotools does,
+  let config_h_path = format!("{}/config.h", local_includes);
+  std::fs::write(&config_h_path, r#"
+#ifndef TRE_CONFIG_H_ROOT
+#define TRE_CONFIG_H_ROOT
+
+#define HAVE_ALLOCA 1
+#define HAVE_ALLOCA_H 1
+#define HAVE_CFLOCALECOPYCURRENT 1
+#define HAVE_CFPREFERENCESCOPYAPPVALUE 1
+#define HAVE_DLFCN_H 1
+#define HAVE_GETOPT_H 1
+#define HAVE_GETOPT_LONG 1
+#define HAVE_INTTYPES_H 1
+#define HAVE_ISASCII 1
+#define HAVE_ISBLANK 1
+#define HAVE_ISWASCII 1
+#define HAVE_ISWBLANK 1
+#define HAVE_ISWCTYPE 1
+#define HAVE_ISWLOWER 1
+#define HAVE_ISWUPPER 1
+#define HAVE_MBRTOWC 1
+#define HAVE_MBSTATE_T 1
+#define HAVE_STDINT_H 1
+#define HAVE_STDIO_H 1
+#define HAVE_STDLIB_H 1
+#define HAVE_STRINGS_H 1
+#define HAVE_STRING_H 1
+#define HAVE_SYS_STAT_H 1
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_TOWLOWER 1
+#define HAVE_TOWUPPER 1
+#define HAVE_UNISTD_H 1
+#define HAVE_WCHAR_H 1
+#define HAVE_WCHAR_T 1
+#define HAVE_WCSCHR 1
+#define HAVE_WCSCPY 1
+#define HAVE_WCSLEN 1
+#define HAVE_WCSNCPY 1
+#define HAVE_WCSRTOMBS 1
+#define HAVE_WCTYPE 1
+#define HAVE_WCTYPE_H 1
+#define HAVE_WINT_T 1
+#define LT_OBJDIR ".libs/"
+#define NDEBUG 1
+#define PACKAGE "tre"
+#define PACKAGE_BUGREPORT ""
+#define PACKAGE_NAME "TRE"
+#define PACKAGE_STRING "TRE 0.9.0"
+#define PACKAGE_TARNAME "tre"
+#define PACKAGE_VERSION "0.9.0"
+#define STDC_HEADERS 1
+#define TRE_APPROX 1
+#define TRE_MULTIBYTE 1
+#define TRE_REGEX_T_FIELD value
+#define TRE_USE_ALLOCA 1
+#define TRE_VERSION "0.9.0"
+#define TRE_VERSION_1 0
+#define TRE_VERSION_2 9
+#define TRE_VERSION_3 0
+#define TRE_WCHAR 1
+#define USE_LOCAL_TRE_H 1
+#define VERSION "0.9.0"
+
+#ifndef _ALL_SOURCE
+# define _ALL_SOURCE 1
+#endif
+#ifndef _DARWIN_C_SOURCE
+# define _DARWIN_C_SOURCE 1
+#endif
+#ifndef __EXTENSIONS__
+# define __EXTENSIONS__ 1
+#endif
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE 1
+#endif
+#ifndef _NETBSD_SOURCE
+# define _NETBSD_SOURCE 1
+#endif
+#ifndef _OPENBSD_SOURCE
+# define _OPENBSD_SOURCE 1
+#endif
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# define _POSIX_PTHREAD_SEMANTICS 1
+#endif
+
+#endif
+"#).unwrap();
+
+  // Generate the internal API tre-config.h
+  let tre_config_h_path = format!("{}/tre-config.h", local_includes);
+  std::fs::write(&tre_config_h_path, r#"
 #ifndef TRE_CONFIG_H
 #define TRE_CONFIG_H
 
 #define HAVE_SYS_TYPES_H 1
-#define TRE_APPROX 1
-#define TRE_WCHAR 1
-#define TRE_MULTIBYTE 1
 #define HAVE_WCHAR_H 1
-#define TRE_VERSION \"0.8.0\"
+#define TRE_APPROX 1
+#define TRE_MULTIBYTE 1
+#define TRE_WCHAR 1
+#define TRE_VERSION "0.9.0"
 #define TRE_VERSION_1 0
-#define TRE_VERSION_2 8
+#define TRE_VERSION_2 9
 #define TRE_VERSION_3 0
-
-/* Tell TRE the name of the internal pointer field in regex_t */
 #define TRE_REGEX_T_FIELD value
 
-/* Cross-platform fixes */
 #include <stddef.h>
 #include <sys/types.h>
 
@@ -93,33 +178,12 @@ typedef SSIZE_T ssize_t;
 #endif
 
 #endif
-        ",
-    )
-    .expect("Failed to write tre-config.h");
-  }
+"#).unwrap();
 
   // 2. Configure the C Compiler with maximum performance & Unicode macros
   let mut build = cc::Build::new();
 
-  build
-    .define("HAVE_MEMMOVE", "1")
-    .define("TRE_USE_ALLOCA", "1")
-    .define("HAVE_MBSTATE_T", "1")
-    .define("HAVE_MBRTOWC", "1")
-    .define("HAVE_WCHAR_H", "1")
-    .define("HAVE_WCTYPE_H", "1")
-    .define("HAVE_TOWLOWER", "1")
-    .define("HAVE_TOWUPPER", "1")
-    .define("HAVE_ISWUPPER", "1")
-    .define("HAVE_ISWLOWER", "1")
-    .define("HAVE_ISWCTYPE", "1")
-    .define("HAVE_WCTYPE", "1")
-    .define("HAVE_ISWALNUM", "1")
-    .define("HAVE_ISWSPACE", "1")
-    .define("TRE_MULTIBYTE", "1")
-    .define("TRE_APPROX", "1")
-    .define("TRE_WCHAR", "1")
-    .define("HAVE_SYS_TYPES_H", "1");
+  build.define("HAVE_CONFIG_H", "1");
 
   let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
   let target_env = std::env::var("CARGO_CFG_TARGET_ENV").unwrap_or_default();

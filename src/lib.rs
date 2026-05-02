@@ -56,6 +56,12 @@ extern "C" {
     eflags: c_int,
   ) -> c_int;
   fn tre_regaparams_default(params: *mut tre_regaparams_t);
+  fn tre_regerror(
+    errcode: c_int,
+    preg: *const tre_regex_t,
+    errbuf: *mut c_char,
+    errbuf_size: usize,
+  ) -> usize;
 }
 
 // --- JS Objects ---
@@ -117,7 +123,21 @@ impl TreRegex {
     // Pass a mutable reference to the boxed memory
     let res = unsafe { tre_regcomp(&mut *preg, c_pattern.as_ptr(), flags) };
     if res != 0 {
-      return Err(Error::from_reason("Failed to compile regex pattern"));
+      let mut errbuf = vec![0u8; 256];
+      unsafe {
+        tre_regerror(
+          res,
+          &mut *preg,
+          errbuf.as_mut_ptr() as *mut c_char,
+          errbuf.len(),
+        )
+      };
+      let c_str = unsafe { std::ffi::CStr::from_ptr(errbuf.as_ptr() as *const c_char) };
+      let err_msg = c_str.to_string_lossy().into_owned();
+      return Err(Error::from_reason(format!(
+        "Failed to compile regex pattern: {}",
+        err_msg
+      )));
     }
 
     // Consume the Box so Rust doesn't drop the memory right now!
