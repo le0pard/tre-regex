@@ -240,7 +240,10 @@ regex.matchAll('cot, cow', { maxErrors: 3 })
 ```javascript
 // Allow 3 total errors, but strictly forbid the engine from deleting more than 2 characters
 regex.matchAll('cot, cow', { maxErrors: 3, maxDeletions: 2 })
-// The empty match is mathematically prevented and omitted
+/* => [
+  { matchText: "cot", ..., cost: 1, errors: { insertions: 0, deletions: 0, substitutions: 1 } },
+  { matchText: "cow", ..., cost: 2, errors: { insertions: 0, deletions: 0, substitutions: 2 } }
+] The empty match is mathematically prevented and omitted */
 ```
 
 ### POSIX vs. PCRE Syntax
@@ -254,7 +257,7 @@ The underlying TRE C-library uses **POSIX Extended Regular Expressions (ERE)**. 
 new TreRegex('(cat|dog)s?')
 
 // INVALID: Lookarounds are not supported by POSIX ERE
-new TreRegex('cat(?=s)') // Throws: Failed to compile regex pattern
+new TreRegex('cat(?=s)') // Throws: Failed to compile regex pattern: Invalid regexp
 ```
 
 ### The Performance Cost of Extreme Fuzziness
@@ -271,7 +274,7 @@ In C, strings are just arrays of bytes. An emoji like 🍎 takes up 4 bytes, whi
 
 `TreRegex` handles this natively in Rust. The `index` and `endIndex` returned in the match object are strictly mapped back to **JavaScript UTF-16 code units**, not raw C byte offsets.
 
-**Best Practice**: You can safely use the returned indices directly with `String.prototype.slice()`, even if the text is filled with emojis or multi-byte characters!
+**Best Practice**: You can safely use the returned indices directly with `String.prototype.slice()`, even if the text is filled with emojis or multi-byte characters
 
 ```javascript
 const regex = new TreRegex('apple')
