@@ -312,7 +312,7 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
-      contents: write
+      contents: read
       id-token: write
     needs:
       - lint
