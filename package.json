@@ -3,10 +3,7 @@
   "version": "0.2.1",
   "description": "TreRegex provides a high-performance Node interface to the TRE C library. It brings robust approximate (fuzzy) regular expression matching to Node, featuring multi-byte Unicode string safety, and granular error limits",
   "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/le0pard/tre_regex.git"
-  },
+  "repository": "https://github.com/le0pard/tre-regex",
   "license": "MIT",
   "keywords": [
     "fuzzy-regex",
