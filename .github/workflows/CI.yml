@@ -76,35 +76,35 @@ jobs:
             build: yarn build --target aarch64-pc-windows-msvc
 
           # --- Linux (x64) ---
-          - host: ubuntu-22.04
+          - host: ubuntu-22.04 # need old glib for old node.js
             target: x86_64-unknown-linux-gnu
             build: yarn build --target x86_64-unknown-linux-gnu
-          - host: ubuntu-22.04
+          - host: ubuntu-22.04 # need old glib for old node.js
             target: x86_64-unknown-linux-musl
             build: yarn build --target x86_64-unknown-linux-musl -x
 
           # --- Linux (ARM64) ---
-          - host: ubuntu-22.04
+          - host: ubuntu-22.04 # need old glib for old node.js
             target: aarch64-unknown-linux-gnu
             build: yarn build --target aarch64-unknown-linux-gnu --use-napi-cross
-          - host: ubuntu-22.04
+          - host: ubuntu-22.04 # need old glib for old node.js
             target: aarch64-unknown-linux-musl
             build: yarn build --target aarch64-unknown-linux-musl -x
 
           # --- Linux (x86 32-bit) ---
-          - host: ubuntu-22.04
+          - host: ubuntu-22.04 # need old glib for old node.js
             target: i686-unknown-linux-gnu
             build: yarn build --target i686-unknown-linux-gnu
             setup: sudo apt-get update -qq && sudo apt-get install -yq --no-install-recommends gcc-multilib g++-multilib
-          - host: ubuntu-22.04
+          - host: ubuntu-22.04 # need old glib for old node.js
             target: i686-unknown-linux-musl
             build: yarn build --target i686-unknown-linux-musl -x
 
           # --- Linux (ARMv7 32-bit) ---
-          - host: ubuntu-22.04
+          - host: ubuntu-22.04 # need old glib for old node.js
             target: armv7-unknown-linux-gnueabihf
             build: yarn build --target armv7-unknown-linux-gnueabihf --use-napi-cross
-          - host: ubuntu-22.04
+          - host: ubuntu-22.04 # need old glib for old node.js
             target: armv7-unknown-linux-musleabihf
             build: yarn build --target armv7-unknown-linux-musleabihf -x
     name: stable - ${{ matrix.settings.target }} - node@24
