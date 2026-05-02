@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:le0pard/tre_regex.git"
+    "url": "git+ssh://git@github.com/le0pard/tre_regex.git"
   },
   "license": "MIT",
   "keywords": [
