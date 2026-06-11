@@ -233,15 +233,34 @@ impl TreRegex {
       return None;
     }
 
-    let rm_so = pmatch[0].rm_so as usize;
-    let rm_eo = pmatch[0].rm_eo as usize;
-
-    // Get the raw byte array so we can slice it safely using C byte offsets
     let slice_bytes = slice_to_search.as_bytes();
 
-    // Safely enforce bounds to prevent panic if TRE returns out-of-bounds indices
-    let safe_rm_so = rm_so.min(slice_bytes.len());
-    let safe_rm_eo = rm_eo.min(slice_bytes.len());
+    // Helper closure to safely align TRE's raw byte offsets to valid UTF-8 boundaries
+    let align_bounds = |so: usize, eo: usize| -> (usize, usize) {
+      let mut safe_so = so.min(slice_bytes.len());
+      // Shift start backward to the nearest valid character boundary
+      while safe_so > 0 && !slice_to_search.is_char_boundary(safe_so) {
+        safe_so -= 1;
+      }
+
+      let mut safe_eo = eo.min(slice_bytes.len());
+      // Shift end forward to the nearest valid character boundary
+      while safe_eo < slice_bytes.len() && !slice_to_search.is_char_boundary(safe_eo) {
+        safe_eo += 1;
+      }
+
+      // Ensure the end doesn't accidentally cross behind the start
+      if safe_so > safe_eo {
+        safe_so = safe_eo;
+      }
+
+      (safe_so, safe_eo)
+    };
+
+    // Align the main match boundaries
+    let rm_so_raw = pmatch[0].rm_so as usize;
+    let rm_eo_raw = pmatch[0].rm_eo as usize;
+    let (safe_rm_so, safe_rm_eo) = align_bounds(rm_so_raw, rm_eo_raw);
 
     // Safe prefix extraction
     let prefix_str = std::str::from_utf8(&slice_bytes[..safe_rm_so]).unwrap_or("");
@@ -253,7 +272,7 @@ impl TreRegex {
     let match_chars = match_str.encode_utf16().count() as u32;
     let end_char_index = start_char_index + match_chars;
 
-    // Safe Capture Groups
+    // Safe Capture Groups with boundary alignment
     let mut submatches: Vec<Option<String>> = (1..MAX_NMATCH)
       .map(|i| {
         let so = pmatch[i].rm_so;
@@ -261,10 +280,8 @@ impl TreRegex {
         if so == -1 || so > eo {
           None
         } else {
-          let safe_so = (so as usize).min(slice_bytes.len());
-          let safe_eo = (eo as usize).min(slice_bytes.len());
-          let sub_bytes = &slice_bytes[safe_so..safe_eo];
-          // Use safe from_utf8
+          let (safe_sub_so, safe_sub_eo) = align_bounds(so as usize, eo as usize);
+          let sub_bytes = &slice_bytes[safe_sub_so..safe_sub_eo];
           Some(std::str::from_utf8(sub_bytes).unwrap_or("").to_owned())
         }
       })
@@ -288,7 +305,8 @@ impl TreRegex {
       },
     };
 
-    Some((payload, rm_eo, prefix_chars + match_chars))
+    // We must return `safe_rm_eo` so the loop in `match_all` slices correctly
+    Some((payload, safe_rm_eo, prefix_chars + match_chars))
   }
 
   fn build_params(&self, opts: &Option<TreRegexOptions>) -> tre_regaparams_t {

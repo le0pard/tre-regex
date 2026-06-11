@@ -340,3 +340,27 @@ test('Overlapping Matches - consumes the string and does not return overlapping 
   t.is(results[0].index, 1)
   t.is(results[0].endIndex, 4)
 })
+
+test('Loop Safety - avoids panics when fuzzy matching splits multi-byte characters (rm_eo alignment)', (t) => {
+  const regex = new TreRegex('test')
+
+  t.notThrows(() => {
+    // A high maxErrors allowance forces TRE to match partial bytes
+    // inside the emoji or Kanji, shifting the rm_eo out of bounds.
+    regex.matchAll('tes👨‍👩‍👧‍👦', { maxErrors: 3 })
+    regex.matchAll('こんにちはtest', { maxErrors: 4 })
+    regex.matchAll('🍎b🍌', { maxErrors: 2 })
+  })
+})
+
+test('Loop Safety - correctly advances past split characters without getting stuck', (t) => {
+  const regex = new TreRegex('cat')
+
+  // The 'cat' fuzzy match might consume part of the emoji bytes.
+  // We want to ensure it survives and can still find the next valid match.
+  const results = regex.matchAll('ca🌟 dog cat', { maxErrors: 2 })
+
+  t.true(Array.isArray(results))
+  t.true(results.length >= 1)
+  t.is(results[results.length - 1].matchText, 'cat')
+})
