@@ -289,7 +289,7 @@ target.slice(result.index, result.endIndex)
 
 #### Partial Multi-byte Character Matching
 
-Because the underlying TRE engine operates on raw bytes, a fuzzy match might logically "delete" or "substitute" individual bytes *inside* a multi-byte UTF-8 character (like an emoji or Kanji character).
+Because the underlying TRE engine operates on raw bytes, a fuzzy match might logically "delete" or "substitute" individual bytes _inside_ a multi-byte UTF-8 character (like an emoji or Kanji character).
 
 To prevent returning broken strings with invalid encoding, `@tre-regex/regex` automatically detects if a match boundary splits a multi-byte sequence. It safely expands the match boundary outward to encapsulate the entire valid character.
 
