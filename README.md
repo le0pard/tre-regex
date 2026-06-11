@@ -137,7 +137,7 @@ If your pattern contains 10 or more capture groups `()`, the regex will still co
 
 ### Initialization Options
 
-When creating a new `TreRegex` instance, the constructor takes the pattern as the first argument, and an optional `ignoreCase` boolean as the second:
+When creating a new `TreRegex` instance, the constructor takes the pattern as the first argument, and an optional options object (or `ignoreCase` boolean) as the second:
 
 ```javascript
 // Fails because case doesn't match
@@ -285,6 +285,21 @@ const result = regex.exec(target, { maxErrors: 1 })
 
 // This is 100% safe and will correctly return "aple"
 target.slice(result.index, result.endIndex)
+```
+
+#### Partial Multi-byte Character Matching
+
+Because the underlying TRE engine operates on raw bytes, a fuzzy match might logically "delete" or "substitute" individual bytes *inside* a multi-byte UTF-8 character (like an emoji or Kanji character).
+
+To prevent returning broken strings with invalid encoding, `@tre-regex/regex` automatically detects if a match boundary splits a multi-byte sequence. It safely expands the match boundary outward to encapsulate the entire valid character.
+
+```javascript
+const regex = new TreRegex('test')
+
+// The engine might "delete" some of the 11 bytes inside the family emoji,
+// but the wrapper safely expands the match to include the whole emoji.
+const result = regex.exec('tes👨‍👩‍👧‍👦', { maxErrors: 3 })
+// result.matchText => "tes👨‍👩‍👧‍👦"
 ```
 
 ### Overlapping Matches in `matchAll`
