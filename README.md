@@ -298,8 +298,8 @@ const regex = new TreRegex('test')
 
 // The engine might "delete" some of the 11 bytes inside the family emoji,
 // but the wrapper safely expands the match to include the whole emoji.
-const result = regex.exec('tes👨‍👩‍👧‍👦', { maxErrors: 3 })
-// result.matchText => "tes👨‍👩‍👧‍👦"
+const result = regex.exec('tes🍎', { maxErrors: 3 })
+// result.matchText => "tes🍎"
 ```
 
 ### Overlapping Matches in `matchAll`
